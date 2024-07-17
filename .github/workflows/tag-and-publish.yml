@@ -1,0 +1,67 @@
+name: Tag on NPM Package Version Change and Publish Package
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      git-user-email:
+        description: Git user.email to use.
+        default: 41898282+github-actions[bot]@users.noreply.github.com
+      git-user-name:
+        description: Git user.name.
+        default: github-actions[bot]
+      tag-prefix:
+        description: Prefix prepended to the version in package.json
+        default: v
+jobs:
+  tag:
+    name: Create tag unless exists
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: create-tag
+        run: |
+          #!/bin/bash
+          set -eux
+
+          TAG="${TAG_PREFIX}$(cat package.json | jq -r '.version')"
+
+          # In case only a shallow clone was done
+          git fetch --tags
+
+          if ! git tag | grep "${TAG}"; then
+            git config user.name ${GIT_USER_NAME}
+            git config user.email ${GIT_USER_EMAIL}
+
+            git tag -a ${TAG} -m ${TAG}
+            git push --follow-tags
+
+            echo "TAG_EXISTS=false" >> $GITHUB_OUTPUT
+          else
+            echo "'${TAG}' already exists. No action taken."
+            echo "TAG_EXISTS=true" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GIT_USER_NAME: ${{ inputs.git-user-name || 'holman-deployer' }}
+          GIT_USER_EMAIL: ${{ inputs.git-user-email || 'development@holman.com' }}
+          TAG_PREFIX: ${{ inputs.tag-prefix || 'v' }}
+    outputs:
+      tag_exists: ${{ steps.create-tag.outputs.TAG_EXISTS}}
+  publish:
+    name: Publish NPM Package
+    needs: tag
+    if: needs.tag.outputs.tag_exists == 'false'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      # Setup .npmrc file to publish to GitHub Packages
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          registry-url: 'https://npm.pkg.github.com'
+      - run: npm ci
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
