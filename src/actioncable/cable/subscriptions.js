@@ -9,7 +9,7 @@ The only method intended to be triggered by the user
 #
 # For more details on how you'd configure an actual channel subscription, see Cable.Subscription.
 */
-import Subscription from './Subscription';
+import Subscription from './subscription';
 
 const slice = [].slice;
 

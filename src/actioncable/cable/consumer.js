@@ -15,9 +15,9 @@
 #
 # For more details on how you'd configure an actual channel subscription, see Cable.Subscription.
 */
-import Subscriptions from './Subscriptions';
-import Connection from './Connection';
-import ConnectionMonitor from './ConnectionMonitor';
+import Subscriptions from './subscriptions';
+import Connection from './connection';
+import ConnectionMonitor from './connection_monitor';
 
 class Consumer {
   constructor(url, options) {

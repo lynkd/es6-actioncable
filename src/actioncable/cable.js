@@ -1,4 +1,4 @@
-import Consumer from './Cable/Consumer';
+import Consumer from './cable/consumer';
 
 const CreateWebSocketURL = (url) => {
   if (url && !/^wss?:/i.test(url)) {

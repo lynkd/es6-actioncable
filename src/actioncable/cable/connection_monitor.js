@@ -4,7 +4,7 @@
 # revival reconnections if things go astray. Internal class, not intended for
   direct user manipulation.
 */
-import ActionCable from '../Logger';
+import ActionCable from '../logger';
 
 const now = () => (
   new Date().getTime()
